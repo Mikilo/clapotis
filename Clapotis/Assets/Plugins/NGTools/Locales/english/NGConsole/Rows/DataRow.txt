@@ -1,0 +1,1 @@
+CopyFields=Copy snapshot data	2xCtrl+C

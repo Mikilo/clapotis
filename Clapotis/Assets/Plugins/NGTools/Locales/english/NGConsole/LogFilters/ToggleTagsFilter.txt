@@ -1,0 +1,2 @@
+ToggleTags=Toggle Tags
+AcceptedTags=Accepted Tags

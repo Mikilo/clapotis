@@ -1,0 +1,6 @@
+CopyLine=Copy line	Ctrl+C
+CopyLog=Copy log	2xCtrl+C
+CopyStackTrace=Copy stack trace
+CopyCurrentError=Copy current error
+CopyAllErrors=Copy all errors
+ExportSelection=Export selection

@@ -1,0 +1,2 @@
+NGDraggableObject_Confirm=NG Draggable Object will toggle symbol "{0}" in "Scripting Define Symbols".
+NGDraggableObject_EnableDescription=If active, the PropertyDrawer for any Unity Object in inspector will be overriden.

@@ -1,0 +1,13 @@
+NGHierarchyEnhancer_EnableDescription=Display your custom menus and highlights in Hierarchy window.
+NGHierarchyEnhancer_Margin=Margin
+NGHierarchyEnhancer_MarginDescription=Margin on the right of the toggle button in Hierarchy Window.
+NGHierarchyEnhancer_HoldModifiers=Hold Modifiers
+NGHierarchyEnhancer_HoldModifiersDescription=Set a mask of modifiers to hold a GameObject in Hierarchy.
+NGHierarchyEnhancer_SelectionHoldModifiers=Selection Hold Modifiers
+NGHierarchyEnhancer_SelectionHoldModifiersDescription=Set a mask of modifiers to hold the selection in Hierarchy, toggling will affect all.
+NGHierarchyEnhancer_LayersDescription=Background colors & icons associated with a layer.
+NGHierarchyEnhancer_WidthPerComponent=Width Per Component
+NGHierarchyEnhancer_WidthPerComponentDescription=Defines the width per Component. Set -1 to just highlight the first found in the list below.
+NGHierarchyEnhancer_DrawUnityComponents=Draw Unity Component
+NGHierarchyEnhancer_DrawUnityComponentsDescription=Allows to draw Unity's native Component icon.
+NGHierarchyEnhancer_ComponentColorsDescription=Custom Component Colors (Texture has a higher priority over Color)

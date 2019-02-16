@@ -1,0 +1,10 @@
+NGSettings_MainModule_AlertOnWarning=Blinks Compiler stream even if there is only warnings. Otherwise will only blinks on errors.
+MainModule_ChangeName=Change name
+MainModule_ExportStream=Export
+MainModule_ToggleCategory=Is category
+MainModule_PauseOnLog=Pause on any log
+NGSettings_MainModule_WarningColor=Color of compile warning identifier.
+NGSettings_MainModule_ErrorColor=Color of compile error identifier.
+NGSettings_MainModule_DisplayClearStreamButton=Add a button to clear the stream.
+NGSettings_MainModule_CompactStreamsLimit=Maximum of additional streams before moving to new line.
+NGSettings_MainModule_DefaultFiltersInStream=Default filters added to a new stream.

@@ -1,0 +1,12 @@
+Exporter=Exporter
+ExportFilePath=Export File Path
+OutputLogType=Output Log Type
+OutputIndex=Output Index
+OutputTime=Output Time
+OutputContent=Output Content
+OutputLogFile=Output Log File
+OutputLogFileLine=Output Log File Line
+OutputStackTrace=Output Stack Trace
+Export=Export
+FileRequired=File is required.
+LogsExportedTo=Logs exported in 

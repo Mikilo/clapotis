@@ -1,0 +1,2 @@
+AcceptedTypes=Accepted types
+ByType=By type

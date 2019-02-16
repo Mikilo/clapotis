@@ -671,7 +671,7 @@ MonoBehaviour:
   all2: {fileID: 4300002, guid: 27cd3ffabf618924f9c9eeefb09b60e0, type: 3}
   component: {fileID: 0}
   texture: {fileID: 2800000, guid: b771dc3eefcaa8a47b2a0cb1413c9e99, type: 3}
-  texture2D: {fileID: 0}
+  texture2D: {fileID: 2800000, guid: a4b046882000d004aa375ddae70f046c, type: 3}
   sprite: {fileID: 0}
   color: {r: 0, g: 0, b: 0, a: 0}
   rect:

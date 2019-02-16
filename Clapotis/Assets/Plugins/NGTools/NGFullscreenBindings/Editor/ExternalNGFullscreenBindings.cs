@@ -50,7 +50,7 @@ namespace NGToolsEditor.NGFullscreenBindings
 		[TypeWitness("")]
 		public const string	F11 = " _";
 
-		[TypeWitness("NGToolsEditor.NGConsole.NGConsoleWindow,NGConsoleEditor")]
+		[TypeWitness("NGToolsEditor.NGConsole.NGConsoleWindow,Assembly-CSharp-Editor-firstpass")]
 		public const string	F12 = "NG Console _";
 	}
 }
