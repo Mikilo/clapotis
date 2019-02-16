@@ -35,7 +35,7 @@ namespace NGPackageHelpers
 				}
 				catch (Exception ex)
 				{
-					Debug.LogException(ex);
+					InternalNGDebug.LogException(ex);
 					ProfilesManager.profiles = new List<Profile>();
 				}
 
