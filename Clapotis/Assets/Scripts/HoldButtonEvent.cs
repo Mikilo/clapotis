@@ -14,6 +14,11 @@ namespace Clapotis
 
 		private Coroutine	holdRoutine;
 
+		private void	OnEnable()
+		{
+			this.image.fillAmount = 1F;
+		}
+
 		public void	HoldOn()
 		{
 			this.holdRoutine = this.StartCoroutine(this.Hold());

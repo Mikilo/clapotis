@@ -5,34 +5,28 @@ namespace NGToolsEditor
 {
 	internal static class CustomHotkeys
 	{
-		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Console Clear	_%W", priority = 10000)]
-		public static void	Hotkey1()
-		{
-			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Console Clear", Utility.GetType("NGToolsEditor.NGConsole", "NGConsoleWindow"), "ClearNGConsole");
-		}
-
-		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Hub as Dock	_%#H", priority = 10000)]
-		public static void	Hotkey2()
-		{
-			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Hub as Dock", Utility.GetType("NGToolsEditor.NGHub", "NGHubWindow"), "OpenAsDock");
-		}
-
-		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Scenes	_%&G", priority = 10000)]
-		public static void	Hotkey3()
-		{
-			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Scenes", Utility.GetType("NGToolsEditor.NGScenes", "NGScenesWindow"), "Open");
-		}
-
 		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Spotlight	_%Q", priority = 10000)]
-		public static void	Hotkey4()
+		public static void	Hotkey1()
 		{
 			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Spotlight", Utility.GetType("NGToolsEditor.NGSpotlight", "NGSpotlightWindow"), "Open");
 		}
 
-		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "About	_%#A", priority = 10000)]
-		public static void	Hotkey5()
+		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Scenes	_%G", priority = 10000)]
+		public static void	Hotkey2()
 		{
-			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "About", Utility.GetType("NGToolsEditor", "AboutWindow"), "Open");
+			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Scenes", Utility.GetType("NGToolsEditor.NGScenes", "NGScenesWindow"), "Open");
+		}
+
+		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Hub as Dock	_%#H", priority = 10000)]
+		public static void	Hotkey3()
+		{
+			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Hub as Dock", Utility.GetType("NGToolsEditor.NGHub", "NGHubWindow"), "OpenAsDock");
+		}
+
+		[MenuItem(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Console Clear	_%W", priority = 10000)]
+		public static void	Hotkey4()
+		{
+			NGHotkeys.Invoke(Constants.MenuItemPath + NGHotkeys.SubMenuItemPath + "NG Console Clear", Utility.GetType("NGToolsEditor.NGConsole", "NGConsoleWindow"), "ClearNGConsole");
 		}
 	}
 }

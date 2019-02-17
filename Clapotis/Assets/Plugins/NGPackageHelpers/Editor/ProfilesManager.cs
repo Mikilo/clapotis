@@ -31,13 +31,18 @@ namespace NGPackageHelpers
 			{
 				try
 				{
-					ProfilesManager.profiles = Utility.DeserializeField<List<Profile>>(Convert.FromBase64String(EditorPrefs.GetString(ProfilesManager.ProfilesPrefKey)));
+					string	profilesPref = EditorPrefs.GetString(ProfilesManager.ProfilesPrefKey);
+
+					if (string.IsNullOrEmpty(profilesPref) == false)
+						ProfilesManager.profiles = Utility.DeserializeField<List<Profile>>(Convert.FromBase64String(profilesPref));
 				}
 				catch (Exception ex)
 				{
 					InternalNGDebug.LogException(ex);
-					ProfilesManager.profiles = new List<Profile>();
 				}
+
+				if (ProfilesManager.profiles == null)
+					ProfilesManager.profiles = new List<Profile>();
 
 				if (ProfilesManager.profiles.Count == 0)
 					ProfilesManager.profiles.Add(new Profile() { name = "Profile 1" });
