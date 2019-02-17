@@ -781,7 +781,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 8
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 0.8
   m_Range: 10
   m_SpotAngle: 30
@@ -1323,6 +1323,18 @@ PrefabInstance:
     - target: {fileID: 100002, guid: 977efabb88e1276418bf599daa17b44d, type: 3}
       propertyPath: m_Name
       value: Montagne
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 977efabb88e1276418bf599daa17b44d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.79
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 977efabb88e1276418bf599daa17b44d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -6.51
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 977efabb88e1276418bf599daa17b44d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.28
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 977efabb88e1276418bf599daa17b44d, type: 3}
       propertyPath: m_LocalPosition.x
