@@ -393,10 +393,10 @@ namespace Clapotis
 	{
 		public static Color[]	colors = new Color[]
 		{
-			Color.red,
+			Color.white,
 			Color.green,
+			new Color(255F / 255F, 105F / 255F, 180F / 255F, 1F),
 			Color.blue,
-			Color.yellow,
 		};
 
 		public int	playersCount;
@@ -430,6 +430,7 @@ namespace Clapotis
 		public GameObject	monsterClueModel;
 		public Image		idleTurnImage;
 		public GameObject	godSpot;
+		public GameObject[]	temples;
 		public GameObject[]	spots;
 		public Texture2D[]	icons;
 		public Sprite[]		icons2;
@@ -453,6 +454,7 @@ namespace Clapotis
 		private List<int>	turnOrders = new List<int>();
 		[SerializeField]
 		private int			currentPlayer = -1;
+		public int			CurrentPlayer { get { return this.currentPlayer; } }
 		[SerializeField]
 		private int			turnCounter = 0;
 
@@ -511,6 +513,9 @@ namespace Clapotis
 		{
 			for (int i = 0; i < this.spots.Length; i++)
 				this.spots[i].SetActive(i < (playersCount + 2) * 4);
+
+			for (int i = 0; i < this.temples.Length; i++)
+				this.temples[i].transform.parent.gameObject.SetActive(i < playersCount);
 
 			this.gamePhase = GamePhase.PickCards;
 			this.board = new Board(playersCount, artefactsCount, this.board);
@@ -620,6 +625,14 @@ namespace Clapotis
 									this.NextPhase();
 								});
 							}
+						});
+					}
+					else if (this.askRegionIndex == -1) // Temple.
+					{
+						this.DisplayMessage("Pigez les cartes.", "Poursuivez", () =>
+						{
+							this.gamePhase = GamePhase.PlayerIdle;
+							this.NextPhase();
 						});
 					}
 					else
@@ -938,8 +951,8 @@ namespace Clapotis
 			if (replacedArtefact != null)
 			{
 				this.playPlayerFoundArtifact.PlayRandom();
-				this.foundArtefact.sprite = this.icons2[artefact];
-				this.foundArtefact.transform.parent.gameObject.SetActive(true);
+				this.replaceArtefact.sprite = this.icons2[artefact];
+				this.replaceArtefact.transform.parent.gameObject.SetActive(true);
 
 				//this.DisplayMessage("Vous avez trouvé " + artefact + " et déposé " + replacedArtefact + "!", "Continuez", () =>
 				//{
@@ -950,8 +963,8 @@ namespace Clapotis
 			else
 			{
 				this.playPlayerFoundArtifact.PlayRandom();
-				this.replaceArtefact.sprite = this.icons2[artefact];
-				this.replaceArtefact.transform.parent.gameObject.SetActive(true);
+				this.foundArtefact.sprite = this.icons2[artefact];
+				this.foundArtefact.transform.parent.gameObject.SetActive(true);
 
 				//this.DisplayMessage("Vous avez trouvé " + artefact + "!", "Récupérez", () =>
 				//{

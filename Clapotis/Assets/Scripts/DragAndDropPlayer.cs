@@ -33,59 +33,86 @@ namespace Clapotis
 					RaycastHit	hit;
 
 					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << 10) == true)
-					{
 						this.isDragging = true;
-					}
 				}
 			}
 			else
 			{
 				if (Input.GetMouseButton(0) == true)
 				{
-					if (this.confirmButton.isActiveAndEnabled == true)
-						this.confirmButton.gameObject.SetActive(false);
+					RaycastHit	hit;
 
-					RaycastHit hit;
-
-					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, (1 << 11) | (1 << 9)) == true)
+					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, /*(1 << 11) | */(1 << 9)) == true)
 					{
+						if (hit.transform.gameObject.name.Contains("Temple") == true)
+						{
+							if (hit.transform.gameObject != this.gameManager.temples[this.gameManager.CurrentPlayer])
+							{
+								if (this.confirmButton.isActiveAndEnabled == true)
+									this.confirmButton.gameObject.SetActive(false);
+								return;
+							}
+						}
+
 						if (hit.transform.gameObject.layer == 9)
+						{
+							if (this.confirmButton.isActiveAndEnabled == false)
+								this.confirmButton.gameObject.SetActive(true);
+
 							this.transform.position = hit.transform.position + Vector3.up;
+
+							if (this.gameManager.godSpot == hit.transform.gameObject)
+							{
+								this.gameManager.askRegionIndex = -2; // God spot.
+								this.confirmButton.gameObject.SetActive(true);
+							}
+							else if (hit.transform.gameObject.name.Contains("Temple"))
+							{
+								this.gameManager.askRegionIndex = -1; // Temples
+								this.confirmButton.gameObject.SetActive(true);
+							}
+							else
+							{
+								for (int i = 0; i < this.gameManager.spots.Length; i++)
+								{
+									if (this.gameManager.spots[i] == hit.transform.gameObject)
+									{
+										this.gameManager.askRegionIndex = i / this.gameManager.Board.spotPerRegion;
+										this.gameManager.askSpotIndex = i % this.gameManager.Board.spotPerRegion;
+										this.confirmButton.gameObject.SetActive(true);
+										break;
+									}
+								}
+							}
+						}
 						else
+						{
+							if (this.confirmButton.isActiveAndEnabled == true)
+								this.confirmButton.gameObject.SetActive(false);
+
 							this.transform.position = hit.point + Vector3.up;
+						}
 					}
 				}
 				else if (Input.GetMouseButtonUp(0) == true)
 				{
 					this.isDragging = false;
 
-					RaycastHit	hit;
+					//RaycastHit	hit;
 
-					if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << 9) == true)
-					{
-						this.transform.position = hit.transform.position + Vector3.up;
+					//if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << 9) == true)
+					//{
+					//	if (hit.transform.gameObject.name.Contains("Temple") == true)
+					//	{
+					//		if (hit.transform.gameObject != this.gameManager.temples[this.gameManager.CurrentPlayer])
+					//			return;
+					//	}
 
-						if (this.gameManager.godSpot == hit.transform.gameObject)
-						{
-							this.gameManager.askRegionIndex = -2; // God spot.
-							this.confirmButton.gameObject.SetActive(true);
-						}
-						else
-						{
-							for (int i = 0; i < this.gameManager.spots.Length; i++)
-							{
-								if (this.gameManager.spots[i] == hit.transform.gameObject)
-								{
-									this.gameManager.askRegionIndex = i / this.gameManager.Board.spotPerRegion;
-									this.gameManager.askSpotIndex = i % this.gameManager.Board.spotPerRegion;
-									this.confirmButton.gameObject.SetActive(true);
-									break;
-								}
-							}
-						}
-					}
-					else
-						this.originPosition = this.transform.position;
+					//	this.transform.position = hit.transform.position + Vector3.up;
+
+					//}
+					//else
+					//	this.originPosition = this.transform.position;
 				}
 			}
 		}
