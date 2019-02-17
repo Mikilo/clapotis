@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LowPolyWater 1
-  m_Shader: {fileID: 4800000, guid: a9cde6543f2604b4cbd3023847cb9c0b, type: 3}
-  m_ShaderKeywords: _EMISSION _LOWPOLY_ON
+  m_Name: Rock.018
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_ShaderKeywords: 
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -39,23 +39,11 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _Foam:
-        m_Texture: {fileID: 2800000, guid: 9fbef4b79ca3b784ba023cb1331520d5, type: 3}
-        m_Scale: {x: 20, y: 20}
-        m_Offset: {x: 0, y: 0}
-    - _FoamDistortion:
-        m_Texture: {fileID: 2800000, guid: cd460ee4ac5c1e746b7a734cc7cc64dd, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalOnlyNoPolyMode:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -67,58 +55,23 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _WaterNormal:
-        m_Texture: {fileID: 2800000, guid: 9a4a55d8d2e54394d97426434477cdcf, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _WaveGuide:
-        m_Texture: {fileID: 2800000, guid: 31890676c5b178840848afa665cb5a2f, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _texcoord:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _Distortion: 0.5
     - _DstBlend: 0
-    - _FoamDepth: 0
-    - _FoamDist: 0.221
-    - _FoamFalloff: 0
-    - _FoamSmoothness: 0
-    - _FoamSpecular: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.928
+    - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LowPoly: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NormalScale: -0.01
     - _OcclusionStrength: 1
-    - _Opacity: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessValue: 16
     - _UVSec: 0
-    - _WaterDepth: 0
-    - _WaterFalloff: 0
-    - _WaterSmoothness: 0
-    - _WaterSpecular: 0
-    - _WaveHeight: 0
-    - _WaveSpeed: 0.24
-    - _WavesAmount: 8.87
-    - _WavesAmplitude: 0.1
     - _ZWrite: 1
-    - __dirty: 0
     m_Colors:
-    - _Color: {r: 0.26352793, g: 0.31328988, b: 0.3962264, a: 1}
-    - _DeepColor: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 0.8, g: 0.8, b: 0.8, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FoamColor: {r: 1, g: 1, b: 1, a: 0}
-    - _ShalowColor: {r: 0.3962264, g: 0.18129228, b: 0.18129228, a: 0}
-    - _WaterColor: {r: 0.043137208, g: 0.4470588, b: 1, a: 1}
