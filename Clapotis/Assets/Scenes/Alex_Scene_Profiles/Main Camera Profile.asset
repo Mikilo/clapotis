@@ -1398,10 +1398,10 @@ MonoBehaviour:
     value: 4
   color:
     overrideState: 1
-    value: {r: 0.4528302, g: 0.19010323, b: 0.19010323, a: 1}
+    value: {r: 0.4069509, g: 0.44488764, b: 0.5566038, a: 1}
   ambientOnly:
     overrideState: 1
-    value: 1
+    value: 0
   noiseFilterTolerance:
     overrideState: 1
     value: 0
