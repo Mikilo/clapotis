@@ -48,8 +48,6 @@ namespace Clapotis
 						{
 							if (hit.transform.gameObject != this.gameManager.temples[this.gameManager.CurrentPlayer])
 							{
-								if (this.confirmButton.isActiveAndEnabled == true)
-									this.confirmButton.gameObject.SetActive(false);
 								return;
 							}
 						}
@@ -64,12 +62,12 @@ namespace Clapotis
 							if (this.gameManager.godSpot == hit.transform.gameObject)
 							{
 								this.gameManager.askRegionIndex = -2; // God spot.
-								this.confirmButton.gameObject.SetActive(true);
+								//this.confirmButton.gameObject.SetActive(true);
 							}
 							else if (hit.transform.gameObject.name.Contains("Temple"))
 							{
 								this.gameManager.askRegionIndex = -1; // Temples
-								this.confirmButton.gameObject.SetActive(true);
+								//this.confirmButton.gameObject.SetActive(true);
 							}
 							else
 							{
@@ -79,7 +77,7 @@ namespace Clapotis
 									{
 										this.gameManager.askRegionIndex = i / this.gameManager.Board.spotPerRegion;
 										this.gameManager.askSpotIndex = i % this.gameManager.Board.spotPerRegion;
-										this.confirmButton.gameObject.SetActive(true);
+										//this.confirmButton.gameObject.SetActive(true);
 										break;
 									}
 								}

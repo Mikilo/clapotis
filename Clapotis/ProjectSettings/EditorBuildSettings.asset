@@ -6,9 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/QR/Samples/Continuous/ContinuousDemo.unity
-    guid: 744a9a2b17efe6e48b5b541a2e5c70c1
-  - enabled: 1
-    path: Assets/QR/Samples/Simple/SimpleDemo.unity
-    guid: 93c1548587961484cb231b7f9c4a0734
+    path: Assets/Scenes/MichaelScene.unity
+    guid: 44f31676bc8799647b9ed1478a6b2e46
   m_configObjects: {}

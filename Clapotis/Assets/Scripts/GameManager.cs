@@ -81,7 +81,7 @@ namespace Clapotis
 
 		public static implicit operator int(Artefact value)
 		{
-			return value.group * (int)value.slot;
+			return value.group * 2 + ((int)value.slot % 2);
 		}
 
 		public override string	ToString()
@@ -150,7 +150,7 @@ namespace Clapotis
 				{
 					for (int j = i - 1; j >= 0; j--)
 					{
-						if (this.artefacts[j] == this.artefacts[i])
+						if (this.artefacts[j].group == this.artefacts[i].group)
 						{
 							++power;
 							// TODO comment next line for continuous power-up by set of more than 2.
@@ -198,7 +198,7 @@ namespace Clapotis
 		public readonly int	spotPerRegion;
 
 		public float	newArtefactRate = .5F;
-		public float	newMonsterRate = .15F;
+		public float	newMonsterRate = .20F;
 
 		public int	winner;
 		public int	gameIteration;
@@ -283,6 +283,15 @@ namespace Clapotis
 						}
 					}
 				}
+
+				for (int i = this.boardItems.Count; i < artefactsCount && i < this.artefacts.Count; i++)
+				{
+					int			randomArtefactIndex = Random.Range(0, this.artefacts.Count);
+					Location	location = this.GetEmptyLocation();
+
+					this.boardItems.Add(new OnBoardItem(this.artefacts[randomArtefactIndex], location));
+					this.artefacts.RemoveAt(randomArtefactIndex);
+				}
 			}
 			else
 			{
@@ -290,7 +299,7 @@ namespace Clapotis
 					this.artefacts.Add(new Artefact(i / 2, (Artefact.Slot)((i % (int)Artefact.Slot.Total) & 0x3)));
 
 				this.boardItems = new List<OnBoardItem>(artefactsCount);
-				for (int i = 0; i < artefactsCount; i++)
+				for (int i = 0; i < artefactsCount && i < this.artefacts.Count; i++)
 				{
 					int			randomArtefactIndex = Random.Range(0, this.artefacts.Count);
 					Location	location = this.GetEmptyLocation();
@@ -432,6 +441,8 @@ namespace Clapotis
 		public GameObject	godSpot;
 		public GameObject[]	temples;
 		public GameObject[]	spots;
+		public GameObject[]	characters;
+		public Sprite[]		pictures;
 		public Texture2D[]	icons;
 		public Sprite[]		icons2;
 
@@ -458,11 +469,14 @@ namespace Clapotis
 		[SerializeField]
 		private int			turnCounter = 0;
 
+		private int	debug = 0;
+
 		private void	OnGUI()
 		{
-			if (this.currentPlayer >= 0)
+			if (debug > 0 && this.currentPlayer >= 0)
 			{
 				GUILayout.Label("Current player: " + this.currentPlayer);
+
 				for (int i = 0; i < this.board.players[this.currentPlayer].artefacts.Count; i++)
 					GUILayout.Label("Artefact[" + i + "]: " + this.board.players[this.currentPlayer].artefacts[i]);
 
@@ -569,7 +583,8 @@ namespace Clapotis
 
 					this.currentPlayer = this.turnOrders[0];
 					this.idleTurnImage.gameObject.SetActive(true);
-					this.idleTurnImage.GetComponentsInChildren<Image>()[1].color = GameManager.colors[this.currentPlayer];
+					//this.idleTurnImage.GetComponentsInChildren<Image>()[1].color = GameManager.colors[this.currentPlayer];
+					this.idleTurnImage.GetComponentsInChildren<Image>()[1].sprite = this.pictures[this.currentPlayer];
 					this.turnOrders.RemoveAt(0);
 
 					// TODO Ajoutez l'image
@@ -580,6 +595,9 @@ namespace Clapotis
 						this.gamePhase = GamePhase.AskPlayerSpot;
 					//	this.NextPhase();
 					//});
+
+					for (int i = 0; i < this.characters.Length; i++)
+						this.characters[i].SetActive(i == this.currentPlayer);
 
 					this.playNewPlayerTurn.PlayRandom();
 
@@ -759,7 +777,7 @@ namespace Clapotis
 							}
 						}
 					}
-					else if (Random.Range(0F, 1F) > this.board.newArtefactRate)
+					else// if (Random.Range(0F, 1F) > this.board.newArtefactRate)
 					{
 						Artefact	artefact = this.board.PopRandomArtefactFromPool();
 
@@ -780,14 +798,14 @@ namespace Clapotis
 							}
 						}
 					}
-					else
-					{
-						this.DisplayMessage("Le royaume est paisible (on entend des crickets)", "Poursuivez", () =>
-						{
-							this.gamePhase = GamePhase.PickCards;
-							this.NextPhase();
-						});
-					}
+					//else
+					//{
+					//	this.DisplayMessage("Le royaume est paisible (on entend des crickets)", "Poursuivez", () =>
+					//	{
+					//		this.gamePhase = GamePhase.PickCards;
+					//		this.NextPhase();
+					//	});
+					//}
 
 					break;
 
@@ -798,7 +816,16 @@ namespace Clapotis
 					// Make sure the winner is not counted.
 					this.turnOrders.Remove(this.currentPlayer);
 
+					this.rankings[0].sprite = this.pictures[this.currentPlayer];
+
+					for (int i = 0; i < this.turnOrders.Count; i++)
+						this.rankings[i + 1].sprite = this.pictures[this.turnOrders[i]];
+
+					for (int i = this.playersCount; i < this.rankings.Length; i++)
+						this.rankings[i].gameObject.SetActive(false);
+
 					Player	first = this.board.players[this.currentPlayer];
+					Player	last = this.board.players[this.turnOrders[this.turnOrders.Count - 1]];
 
 					if (first.artefacts.Count > 0)
 					{
@@ -835,14 +862,33 @@ namespace Clapotis
 
 						this.board.firstSacrifices.Add(first.artefacts[n]);
 						first.artefacts.RemoveAt(n);
+
+						this.classementTerminezButton.SetActive(false);
+						this.classementContinuezButton.SetActive(true);
+						this.skipFirstButton.SetActive(false);
+					}
+					else
+					{
+						this.classementContinuezButton.SetActive(false);
+
+						if (last.artefacts.Count == 0)
+						{
+							this.classementTerminezButton.SetActive(true);
+							this.skipFirstButton.SetActive(false);
+						}
+						else
+						{
+							this.classementTerminezButton.SetActive(false);
+							this.skipFirstButton.SetActive(true);
+						}
 					}
 
 					comboBREAKER:
 
-					Player	last = this.board.players[this.turnOrders[this.turnOrders.Count - 1]];
-
 					if (last.artefacts.Count > 0)
 					{
+						this.lastPicture.sprite = this.pictures[this.turnOrders[this.turnOrders.Count - 1]];
+
 						for (int i = 0; i < this.lastSelector.choices.Length; i++)
 							this.lastSelector.choices[i].gameObject.SetActive(false);
 
@@ -879,6 +925,11 @@ namespace Clapotis
 
 		public GameObject	firstTerminezButton;
 		public GameObject	firstContinuezButton;
+		public GameObject	classementTerminezButton;
+		public GameObject	classementContinuezButton;
+		public GameObject	skipFirstButton;
+		public Image		lastPicture;
+		public Image[]		rankings;
 
 		public Image	highlightClueFader;
 
@@ -917,8 +968,7 @@ namespace Clapotis
 		{
 			if (player.CanAddArtefact(artefact) == false)
 			{
-				//this.replaceArtefactImage.sprite = null;
-				this.replaceArtefactImage.GetComponentsInChildren<TextMeshProUGUI>()[1].text = artefact.ToString();
+				this.replaceArtefactImage.sprite = this.icons2[artefact];
 
 				this.promptPlayer = player;
 				this.promptBoardItem = boardItem;
@@ -951,8 +1001,8 @@ namespace Clapotis
 			if (replacedArtefact != null)
 			{
 				this.playPlayerFoundArtifact.PlayRandom();
-				this.replaceArtefact.sprite = this.icons2[artefact];
-				this.replaceArtefact.transform.parent.gameObject.SetActive(true);
+				this.foundArtefact.sprite = this.icons2[artefact];
+				this.foundArtefact.transform.parent.gameObject.SetActive(true);
 
 				//this.DisplayMessage("Vous avez trouvé " + artefact + " et déposé " + replacedArtefact + "!", "Continuez", () =>
 				//{
