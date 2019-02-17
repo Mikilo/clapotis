@@ -9,7 +9,7 @@ namespace Clapotis
 		public Button		confirmButton;
 
 		private bool	isDragging;
-		private Vector3	originPosition;
+		public Vector3	originPosition;
 
 		private void	Awake()
 		{

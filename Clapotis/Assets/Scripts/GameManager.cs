@@ -65,8 +65,8 @@ namespace Clapotis
 		{
 			Head,
 			Body,
-			LeftArm,
-			RightArm,
+			Weapon,
+			Shield,
 			Total
 		}
 
@@ -88,18 +88,16 @@ namespace Clapotis
 	[Serializable]
 	public class Monster : Item
 	{
-		public int		power;
 		public Artefact	artefact;
 
-		public	Monster(int power, Artefact artefact) : base(Type.Monster)
+		public	Monster(Artefact artefact) : base(Type.Monster)
 		{
-			this.power = power;
 			this.artefact = artefact;
 		}
 
 		public override string	ToString()
 		{
-			return "Monster " + power + " " + this.artefact;
+			return "Monster with " + this.artefact;
 		}
 	}
 
@@ -181,7 +179,6 @@ namespace Clapotis
 		}
 	}
 
-	[Serializable]
 	public class Board
 	{
 		public readonly List<Player>		players = new List<Player>();
@@ -189,43 +186,113 @@ namespace Clapotis
 		public readonly List<OnBoardItem>	boardItems = new List<OnBoardItem>();
 		public readonly Player				god;
 
+		public readonly List<Artefact>	firstSacrifices = new List<Artefact>();
+		public readonly List<Artefact>	lastSacrifices = new List<Artefact>();
+
 		public readonly int	regionsCount;
 		public readonly int	spotPerRegion;
-		public readonly int	monsterPower;
-		public readonly int	godPower;
 
 		public float	newArtefactRate = .5F;
 		public float	newMonsterRate = .15F;
 
+		public int	winner;
 		public int	gameIteration;
 
-		public	Board(Board board)
+		public	Board(int playersCount, int artefactsCount, Board board, int spotPerRegion = 4)
 		{
-			this.gameIteration = board.gameIteration + 1;
-		}
-
-		public	Board(int playersCount, int artefactsCount, int monsterPower, int regionsCount = 6, int spotPerRegion = 4)
-		{
-			this.regionsCount = regionsCount;
+			this.regionsCount = playersCount + 2;
 			this.spotPerRegion = spotPerRegion;
-			this.monsterPower = monsterPower;
 
 			this.players = new List<Player>(playersCount);
 			for (int i = 0; i < playersCount; i++)
 				this.players.Add(new Player());
 
 			this.artefacts = new List<Artefact>(28);
-			for (int i = 0; i < 28; i++)
-				this.artefacts.Add(new Artefact(i / 2, (Artefact.Slot)((i % (int)Artefact.Slot.Total) & 0x3)));
 
-			this.boardItems = new List<OnBoardItem>(artefactsCount);
-			for (int i = 0; i < artefactsCount; i++)
+			if (board != null)
 			{
-				int			randomArtefactIndex = Random.Range(0, this.artefacts.Count);
-				Location	location = this.GetEmptyLocation();
+				this.gameIteration = board.gameIteration + 1;
+				this.firstSacrifices.AddRange(board.firstSacrifices);
+				this.lastSacrifices.AddRange(board.lastSacrifices);
 
-				this.boardItems.Add(new OnBoardItem(this.artefacts[randomArtefactIndex], location));
-				this.artefacts.RemoveAt(randomArtefactIndex);
+				for (int i = 0; i < this.firstSacrifices.Count; i++)
+				{
+					if (this.firstSacrifices[i].slot == Artefact.Slot.Shield)
+						this.newMonsterRate += .2F;
+				}
+
+				for (int i = 0; i < board.players.Count; i++)
+				{
+					for (int j = 0; j < board.players[i].artefacts.Count; j++)
+						this.artefacts.Add(board.players[i].artefacts[j]);
+				}
+
+				for (int i = 0; i < board.boardItems.Count; i++)
+				{
+					if (board.boardItems[i].item.type == Item.Type.Artefact)
+						this.artefacts.Add(board.boardItems[i].item as Artefact);
+					else if (board.boardItems[i].item.type == Item.Type.Monster)
+						this.artefacts.Add((board.boardItems[i].item as Monster).artefact);
+				}
+
+				List<Artefact>	localArtefacts = new List<Artefact>();
+
+				for (int i = 0; i < this.regionsCount; i++)
+				{
+					localArtefacts.Clear();
+
+					for (int j = 0; j < board.players.Count; j++)
+					{
+						if (board.players[j].location.regionIndex == i)
+						{
+							for (int k = 0; k < board.players[j].artefacts.Count;  k++)
+								localArtefacts.Insert(Random.Range(0, localArtefacts.Count + 1), board.players[j].artefacts[k]);
+						}
+					}
+
+					// Fill the region.
+					if (localArtefacts.Count >= this.spotPerRegion)
+					{
+						for (int j = 0; j < localArtefacts.Count && j < this.spotPerRegion; j++)
+						{
+							Location	location = new Location() { regionIndex = i, spotIndex = j };
+
+							this.boardItems.Add(new OnBoardItem(localArtefacts[j], location));
+							this.artefacts.Remove(localArtefacts[j]);
+						}
+					}
+					else
+					{
+						for (int j = 0; j < localArtefacts.Count; j++)
+						{
+							Location	location = new Location() { regionIndex = i, spotIndex = Random.Range(0, 4) };
+
+							do
+							{
+								location.spotIndex = Random.Range(0, 4);
+							}
+							while (this.GetBoardItemFromLocation(i, location.spotIndex) != null);
+
+							this.boardItems.Add(new OnBoardItem(localArtefacts[j], location));
+							this.artefacts.Remove(localArtefacts[j]);
+						}
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < 28; i++)
+					this.artefacts.Add(new Artefact(i / 2, (Artefact.Slot)((i % (int)Artefact.Slot.Total) & 0x3)));
+
+				this.boardItems = new List<OnBoardItem>(artefactsCount);
+				for (int i = 0; i < artefactsCount; i++)
+				{
+					int			randomArtefactIndex = Random.Range(0, this.artefacts.Count);
+					Location	location = this.GetEmptyLocation();
+
+					this.boardItems.Add(new OnBoardItem(this.artefacts[randomArtefactIndex], location));
+					this.artefacts.RemoveAt(randomArtefactIndex);
+				}
 			}
 		}
 
@@ -305,8 +372,9 @@ namespace Clapotis
 
 	public enum GamePhase
 	{
+		SelectPlayers,
+		PickCards,
 		MoveAndBattlePhase,
-		StartTurn,
 		PlayerIdle,
 		AskPlayerSpot,
 		ConfirmPlayerSpot,
@@ -328,21 +396,29 @@ namespace Clapotis
 
 		public int	playersCount;
 		public int	artefactsCount;
-		public int	defaultMonsterPower;
 		public int	maxWinStreak = 6;
 
+		public UnityEvent	SelectPlayersEvent;
 		public UnityEvent	FirstIdleEvent;
 		public UnityEvent	AskPlayerSpotEvent;
 		public UnityEvent	ConfirmPlayerSpotEvent;
 		public UnityEvent	WatchClueEvent;
 		public UnityEvent	SecondIdleEvent;
 		public UnityEvent	GodTurnEvent;
+		public UnityEvent	EndGameEvent;
+		public UnityEvent	FinalizeBoardEvent;
+
+		public UnityEvent	PromptArtefactEvent;
 
 		public UnityEvent<string>	confirmEvent;
 		public UnityEvent<string>	messageEvent;
 
 		public int	askRegionIndex;
 		public int	askSpotIndex;
+
+		public TextMeshProUGUI	firstSacrificeDescription;
+		public Selector	lastSelector;
+		public int	lastChoice;
 
 		public GameObject	playerModel;
 		public GameObject	artefactClueModel;
@@ -351,8 +427,18 @@ namespace Clapotis
 		public GameObject	godSpot;
 		public GameObject[]	spots;
 
+		public AudioRandomizer	playGodCreatesArtifact;
+		public AudioRandomizer	playGodCreatesMonster;
+		public AudioRandomizer	playGodDefeated;
+		public AudioRandomizer	playNewPlayerTurn;
+		public AudioRandomizer	playPlayerDefeatedByGod;
+		public AudioRandomizer	playPlayerDefeatedByMonster;
+		public AudioRandomizer	playPlayerDefeatsMonster;
+		public AudioRandomizer	playPlayerSacrificesArtifact;
+		public AudioRandomizer	playPlayerFoundArtifact;
+
 		[SerializeField]
-		public GamePhase	gamePhase = GamePhase.StartTurn;
+		public GamePhase	gamePhase;
 		[SerializeField]
 		private Board		board;
 		public Board		Board { get { return this.board; } }
@@ -368,12 +454,45 @@ namespace Clapotis
 			if (this.currentPlayer >= 0)
 			{
 				GUILayout.Label("Current player: " + this.currentPlayer);
+				for (int i = 0; i < this.board.players[this.currentPlayer].artefacts.Count; i++)
+					GUILayout.Label("Artefact[" + i + "]: " + this.board.players[this.currentPlayer].artefacts[i]);
+
 				for (int i = 0; i < this.board.players.Count; i++)
-					GUILayout.Label("Player[" + i + "]: " + this.board.players[i].artefacts.Count);
+					GUILayout.Label("Player[" + i + " " + this.board.players[i].location + "]: Power=" + this.board.players[i].CalculatePower() + " Artfs=" + this.board.players[i].artefacts.Count);
+
 				GUILayout.Label("Items on board: " + this.board.boardItems.Count);
 				for (int i = 0; i < this.board.boardItems.Count; i++)
 					GUILayout.Label("Item[" + i + " " + this.board.boardItems[i].location + "]: " + this.board.boardItems[i].item);
 			}
+		}
+
+		public void	SetLastChoice(int choice)
+		{
+			this.playPlayerSacrificesArtifact.PlayRandom(true);
+			this.lastChoice = choice;
+		}
+
+		public void	FinalizeBoard()
+		{
+			Player	player = this.board.players[this.turnOrders[this.turnOrders.Count - 1]];
+
+			for (int i = 0; i < player.artefacts.Count; i++)
+			{
+				if ((int)player.artefacts[i].slot == this.lastChoice)
+				{
+					this.board.lastSacrifices.Add(player.artefacts[i]);
+					player.artefacts.RemoveAt(i);
+					break;
+				}
+			}
+
+			this.FinalizeBoardEvent.Invoke();
+		}
+
+		public void SetPlayers(int count)
+		{
+			this.playersCount = count;
+			this.StartNewParty();
 		}
 
 		public void	StartNewParty()
@@ -383,17 +502,11 @@ namespace Clapotis
 
 		public void	StartNewParty(int playersCount, int artefactsCount)
 		{
-			this.gamePhase = GamePhase.MoveAndBattlePhase;
-			this.board = new Board(playersCount, artefactsCount, this.defaultMonsterPower);
-			this.currentPlayer = -1;
-			this.turnCounter = 0;
-			this.NextPhase();
-		}
+			for (int i = 0; i < this.spots.Length; i++)
+				this.spots[i].SetActive(i < (playersCount + 2) * 4);
 
-		public void EvolveParty()
-		{
-			this.gamePhase = GamePhase.MoveAndBattlePhase;
-			this.board = new Board(this.board);
+			this.gamePhase = GamePhase.PickCards;
+			this.board = new Board(playersCount, artefactsCount, this.board);
 			this.currentPlayer = -1;
 			this.turnCounter = 0;
 			this.NextPhase();
@@ -409,19 +522,27 @@ namespace Clapotis
 		{
 			switch (this.gamePhase)
 			{
-				case GamePhase.MoveAndBattlePhase:
-					this.DisplayMessage("Press to initiate the first turn.", () =>
+				case GamePhase.SelectPlayers:
+					this.SelectPlayersEvent.Invoke();
+					break;
+
+				case GamePhase.PickCards:
+					++this.turnCounter;
+					this.GenerateTurnOrders(this.turnOrders);
+
+					this.DisplayMessage("Piochez vos cartes de déplacement", "Débutez", () =>
 					{
-						this.gamePhase = GamePhase.StartTurn;
+						this.gamePhase = GamePhase.MoveAndBattlePhase;
 						this.NextPhase();
 					});
 					break;
 
-				case GamePhase.StartTurn:
-					++this.turnCounter;
-					this.GenerateTurnOrders(this.turnOrders);
-					this.gamePhase = GamePhase.PlayerIdle;
-					this.NextPhase();
+				case GamePhase.MoveAndBattlePhase:
+					this.DisplayMessage("Exécutez vos déplacements et résolvez les combats", "Poursuivez", () =>
+					{
+						this.gamePhase = GamePhase.PlayerIdle;
+						this.NextPhase();
+					});
 					break;
 
 				case GamePhase.PlayerIdle:
@@ -436,18 +557,32 @@ namespace Clapotis
 
 					this.currentPlayer = this.turnOrders[0];
 					this.idleTurnImage.gameObject.SetActive(true);
-					this.idleTurnImage.color = GameManager.colors[this.currentPlayer];
+					this.idleTurnImage.GetComponentsInChildren<Image>()[1].color = GameManager.colors[this.currentPlayer];
 					this.turnOrders.RemoveAt(0);
 
-					this.DisplayMessage("Player " + (this.currentPlayer + 1), () =>
-					{
-						this.idleTurnImage.gameObject.SetActive(false);
+					// TODO Ajoutez l'image
+					//this.idleTurnImage.gameObject.SetActive(true);
+					//this.DisplayMessage("Débutez votre tour " + this.currentPlayer, "Débutez", () =>
+					//{
+					//	//this.idleTurnImage.gameObject.SetActive(false);
 						this.gamePhase = GamePhase.AskPlayerSpot;
-						this.NextPhase();
-					});
+					//	this.NextPhase();
+					//});
+
+					this.playNewPlayerTurn.PlayRandom();
+
 					break;
 
 				case GamePhase.AskPlayerSpot:
+					Location	location = this.board.players[this.currentPlayer].location;
+
+					Debug.Log(this.currentPlayer + " is at " + location);
+					if (location.regionIndex == -1)
+					{
+					}
+					else
+						Object.FindObjectOfType<DragAndDropPlayer>().originPosition = this.spots[location.regionIndex * this.board.spotPerRegion + location.spotIndex].transform.position + Vector3.up;
+
 					this.AskPlayerSpotEvent.Invoke();
 					break;
 
@@ -458,10 +593,11 @@ namespace Clapotis
 
 					if (this.askRegionIndex == -2) // Fighting god.
 					{
-						this.DisplayConfirm("Michael has a power of " + this.board.godPower + ".\nDid you win?", isYes =>
+						this.DisplayConfirm("La montagne sacrée! Combattez", "Succès", "Échec", isYes =>
 						{
 							if (isYes == true)
 							{
+								this.playGodDefeated.PlayRandom();
 								this.gamePhase = GamePhase.EndGame;
 								this.NextPhase();
 							}
@@ -469,7 +605,9 @@ namespace Clapotis
 							{
 								player.location.GoToTemple();
 
-								this.DisplayMessage("You lost, back to temple...", () =>
+								this.playPlayerDefeatedByGod.PlayRandom();
+
+								this.DisplayMessage("Retournez dans votre temple (sans récolter de cartes)", "Poursuivez", () =>
 								{
 									this.gamePhase = GamePhase.PlayerIdle;
 									this.NextPhase();
@@ -490,15 +628,19 @@ namespace Clapotis
 							{
 								Monster	monster = (boardItem.item as Monster);
 
-								this.DisplayConfirm("Monster has a power of " + monster.power + ".\nDid you win?", isYes =>
+								this.DisplayConfirm("Un monstre! Combattez!", "Succès", "Échec", isYes =>
 								{
 									if (isYes == true)
+									{
+										this.playPlayerDefeatsMonster.PlayRandom();
 										this.ProcessArtefact(player, boardItem, monster.artefact);
+									}
 									else
 									{
+										this.playPlayerDefeatedByMonster.PlayRandom();
 										player.location.GoToTemple();
 
-										this.DisplayMessage("You lost, back to temple...", () =>
+										this.DisplayMessage("Retournez dans votre temple (sans récolter de cartes)", "Poursuivez", () =>
 										{
 											this.gamePhase = GamePhase.PlayerIdle;
 											this.NextPhase();
@@ -511,7 +653,7 @@ namespace Clapotis
 						}
 						else
 						{
-							this.DisplayMessage("Please \"pige une carte\" and please watch the following clue.", () =>
+							this.DisplayMessage("Pigez une carte de malédiction et donnez-la face cachée à un autre joueur", "Continuez", () =>
 							{
 								this.gamePhase = GamePhase.WatchClue;
 								this.NextPhase();
@@ -537,15 +679,14 @@ namespace Clapotis
 
 					this.WatchClueEvent.Invoke();
 
+					this.StopAllCoroutines();
 					this.StartCoroutine(this.HighlightClue());
 					break;
 
 				case GamePhase.SecondIdle:
 					this.SecondIdleEvent.Invoke();
 
-					this.idleTurnImage.color = Color.cyan;
-
-					this.DisplayMessage("It is Michael Allmighty's turn", () =>
+					this.DisplayMessage("La montagne sacrée s'agite", "Poursuivez", () =>
 					{
 						this.gamePhase = GamePhase.GodTurn;
 						this.NextPhase();
@@ -556,58 +697,74 @@ namespace Clapotis
 				case GamePhase.GodTurn:
 					this.GodTurnEvent.Invoke();
 
-					if (Random.Range(0F, 1F) > this.board.newArtefactRate)
+					if (Random.Range(0F, 1F) > this.board.newMonsterRate)
 					{
-						Artefact	artefact = this.board.PopRandomArtefactFromPool();
-
-						if (artefact != null)
+						Location	location2 = new Location()
 						{
-							Location	location = this.board.GetEmptyLocation();
+							regionIndex = Random.Range(0, this.board.regionsCount),
+							spotIndex = Random.Range(0, this.board.spotPerRegion)
+						};
 
-							if (location != null)
+						OnBoardItem	boardItem3 = this.board.GetBoardItemFromLocation(location2.regionIndex, location2.spotIndex);
+
+						if (boardItem3 != null)
+						{
+							if (boardItem3.item.type == Item.Type.Artefact)
 							{
-								this.board.boardItems.Add(new OnBoardItem(artefact, location));
+								this.playGodCreatesMonster.PlayRandom();
 
-								this.DisplayMessage("A new Artefact appeared !", () =>
+								boardItem3.item = new Monster(boardItem3.item as Artefact);
+
+								this.DisplayMessage("Un monstre est apparu!", "Poursuivez", () =>
 								{
-									this.gamePhase = GamePhase.MoveAndBattlePhase;
+									this.gamePhase = GamePhase.PickCards;
+									this.NextPhase();
+								});
+							}
+						}
+						else
+						{
+							Artefact	artefact = this.board.PopRandomArtefactFromPool();
+
+							if (artefact != null)
+							{
+								this.playGodCreatesArtifact.PlayRandom();
+								this.board.boardItems.Add(new OnBoardItem(artefact, location2));
+
+								this.DisplayMessage("Un artéfact est apparu!", "Poursuivez", () =>
+								{
+									this.gamePhase = GamePhase.PickCards;
 									this.NextPhase();
 								});
 							}
 						}
 					}
-					else if (Random.Range(0F, 1F) > this.board.newMonsterRate)
+					else if (Random.Range(0F, 1F) > this.board.newArtefactRate)
 					{
-						Location	location = this.board.GetRandomArtefactLocation();
+						Artefact	artefact = this.board.PopRandomArtefactFromPool();
 
-						if (location != null)
+						if (artefact != null)
 						{
-							OnBoardItem	boardItem3 =  this.board.GetBoardItemFromLocation(location.regionIndex, location.spotIndex);
+							Location	location2 = this.board.GetEmptyLocation();
 
-							boardItem3.item = new Monster(this.board.monsterPower, boardItem3.item as Artefact);
-
-							this.DisplayMessage("A new monster arrived !", () =>
+							if (location2 != null)
 							{
-								this.gamePhase = GamePhase.MoveAndBattlePhase;
-								this.NextPhase();
-							});
+								this.playGodCreatesArtifact.PlayRandom();
+								this.board.boardItems.Add(new OnBoardItem(artefact, location2));
+
+								this.DisplayMessage("Un artéfact est apparu!", "Poursuivez", () =>
+								{
+									this.gamePhase = GamePhase.PickCards;
+									this.NextPhase();
+								});
+							}
 						}
 					}
 					else
-					// TODO Random skill affecting the board
-					//if ()
-					//{
-					//	this.DisplayMessage("Something happened", () =>
-					//	{
-					//		this.gamePhase = GamePhase.StartTurn;
-					//		this.NextPhase();
-					//	});
-					//}
-					//else
 					{
-						this.DisplayMessage("Nothing happened.", () =>
+						this.DisplayMessage("Le royaume est paisible (on entend des crickets)", "Poursuivez", () =>
 						{
-							this.gamePhase = GamePhase.MoveAndBattlePhase;
+							this.gamePhase = GamePhase.PickCards;
 							this.NextPhase();
 						});
 					}
@@ -615,26 +772,114 @@ namespace Clapotis
 					break;
 
 				case GamePhase.EndGame:
-					this.DisplayMessage("You won against Michael the Allmight... GG & Kudos to you !", () =>
+					this.GenerateTurnOrders(this.turnOrders);
+
+					this.board.winner = this.currentPlayer;
+					// Make sure the winner is not counted.
+					this.turnOrders.Remove(this.currentPlayer);
+
+					Player	first = this.board.players[this.currentPlayer];
+
+					if (first.artefacts.Count > 0)
 					{
-						if (this.board.gameIteration + 1 == this.maxWinStreak)
+						int	n;
+
+						do
 						{
-							this.DisplayMessage("You reached " + this.maxWinStreak + " wins against Michael, congratulation !\nPress to start a new game", () =>
+							n = Random.Range(0, first.artefacts.Count);
+
+							int	total = 0;
+
+							for (int i = 0; i < this.board.firstSacrifices.Count; i++)
 							{
-								this.StartNewParty();
-							});
+								if (this.board.firstSacrifices[i].slot == first.artefacts[n].slot)
+									++total;
+							}
+
+							if (total < 4)
+								break;
+
+							if (first.artefacts.Count == 1)
+								goto comboBREAKER;
 						}
-						else
+						while (true);
+
+						if (first.artefacts[n].slot == Artefact.Slot.Head)
+							this.firstSacrificeDescription.text = "Tête: Les joueurs débutent la partie avec -1 cartes en main (max -4)";
+						else if (first.artefacts[n].slot == Artefact.Slot.Body)
+							this.firstSacrificeDescription.text = "Armure: Certains sites requièrent +1 carte de déplacement pour être atteints (max + 1 / site). Un collant est apposé à coté des sites en question.";
+						else if (first.artefacts[n].slot == Artefact.Slot.Shield)
+							this.firstSacrificeDescription.text = "Bouclier: Les probabilités d’apparition des monstres sont augmentées de 20 % (max + 80 %)";
+						else if (first.artefacts[n].slot == Artefact.Slot.Weapon)
+							this.firstSacrificeDescription.text = "Arme: La difficulté des monstres est augmentée de +1 niveau de puissance (max +4)";
+
+						this.board.firstSacrifices.Add(first.artefacts[n]);
+						first.artefacts.RemoveAt(n);
+					}
+
+					comboBREAKER:
+
+					Player	last = this.board.players[this.turnOrders[this.turnOrders.Count - 1]];
+
+					if (last.artefacts.Count > 0)
+					{
+						for (int i = 0; i < this.lastSelector.choices.Length; i++)
+							this.lastSelector.choices[i].gameObject.SetActive(false);
+
+						for (int i = 0; i < last.artefacts.Count; i++)
 						{
-							this.DisplayMessage("Press to evolve to the New World", () =>
-							{
-								this.EvolveParty();
-							});
+							string	slot = null;
+
+							if (last.artefacts[i].slot == Artefact.Slot.Head)
+								slot = "Tête";
+							else if (last.artefacts[i].slot == Artefact.Slot.Body)
+								slot = "Armure";
+							else if (last.artefacts[i].slot == Artefact.Slot.Weapon)
+								slot = "Arme";
+							else if (last.artefacts[i].slot == Artefact.Slot.Shield)
+								slot = "Bouclier";
+
+							this.lastSelector.choices[(int)last.artefacts[i].slot].gameObject.SetActive(true);
+							this.lastSelector.choices[(int)last.artefacts[i].slot].GetComponentInChildren<Text>().text = slot;
 						}
-					});
+
+						this.firstTerminezButton.SetActive(false);
+						this.firstContinuezButton.SetActive(true);
+					}
+					else
+					{
+						this.firstTerminezButton.SetActive(true);
+						this.firstContinuezButton.SetActive(false);
+					}
+
+					//this.firstSelector.;
+					//this.lastSelector.;
+					this.EndGameEvent.Invoke();
+					//this.DisplayMessage("You won against Michael the Allmight... GG & Kudos to you !", () =>
+					//{
+					//	if (this.board.gameIteration + 1 == this.maxWinStreak)
+					//	{
+					//		this.DisplayMessage("You reached " + this.maxWinStreak + " wins against Michael, congratulation !\nPress to start a new game", () =>
+					//		{
+					//			this.StartNewParty();
+					//		});
+					//	}
+					//	else
+					//	{
+					//		this.DisplayMessage("Press to evolve to the New World", () =>
+					//		{
+					//			this.EvolveParty();
+					//		});
+					//	}
+					//});
 					break;
 			}
 		}
+
+		public GameObject	firstTerminezButton;
+		public GameObject	firstContinuezButton;
+
+		public Image	highlightClueFader;
 
 		private IEnumerator	HighlightClue()
 		{
@@ -648,18 +893,16 @@ namespace Clapotis
 
 			time = 0F;
 
-			this.messagePopup.SetActive(true);
-			this.messagePopup.GetComponentInChildren<TextMeshProUGUI>().text = "";
+			this.highlightClueFader.gameObject.SetActive(true);
 
 			while (time < 1F)
 			{
 				time += Time.deltaTime;
-				this.messagePopup.GetComponent<CanvasGroup>().alpha = time;
+				this.highlightClueFader.color = new Color(0F, 0F, 0F, time);
 				yield return null;
 			}
 
-			this.messagePopup.GetComponent<CanvasGroup>().alpha = 1F;
-
+			this.highlightClueFader.gameObject.SetActive(false);
 			this.artefactClueModel.SetActive(false);
 			this.monsterClueModel.SetActive(false);
 
@@ -667,15 +910,20 @@ namespace Clapotis
 			this.NextPhase();
 		}
 
+		public Image	replaceArtefactImage;
+
 		private void	ProcessArtefact(Player player, OnBoardItem boardItem, Artefact artefact)
 		{
 			if (player.CanAddArtefact(artefact) == false)
 			{
-				this.DisplayConfirm("You already possess a " + artefact.slot + " Artefact, replace with " + artefact + "?", isYes2 =>
-				{
-					if (isYes2 == true)
-						this.AddArtefactToPlayer(player, artefact, boardItem);
-				});
+				//this.replaceArtefactImage.sprite = null;
+				this.replaceArtefactImage.GetComponentsInChildren<TextMeshProUGUI>()[1].text = artefact.ToString();
+
+				this.promptPlayer = player;
+				this.promptBoardItem = boardItem;
+				this.promptArtefact = artefact;
+
+				this.PromptArtefactEvent.Invoke();
 			}
 			else
 				this.AddArtefactToPlayer(player, artefact, boardItem);
@@ -683,18 +931,31 @@ namespace Clapotis
 
 		private void	AddArtefactToPlayer(Player player, Artefact artefact, OnBoardItem boardItem)
 		{
-			artefact = player.AddOrReplaceArtefact(artefact);
+			Artefact	replacedArtefact = player.AddOrReplaceArtefact(artefact);
 
-			if (artefact == null)
+			if (replacedArtefact == null)
 				this.board.DeleteItemOnLocation(this.askRegionIndex, this.askSpotIndex);
 			else
-				boardItem.item = artefact;
+				boardItem.item = replacedArtefact;
 
-			this.DisplayMessage("You received Artefact " + artefact + " !", () =>
+			if (replacedArtefact != null)
 			{
-				this.gamePhase = GamePhase.PlayerIdle;
-				this.NextPhase();
-			});
+				this.playPlayerFoundArtifact.PlayRandom();
+				this.DisplayMessage("Vous avez trouvé " + artefact + " et déposé " + replacedArtefact + "!", "Continuez", () =>
+				{
+					this.gamePhase = GamePhase.PlayerIdle;
+					this.NextPhase();
+				});
+			}
+			else
+			{
+				this.playPlayerFoundArtifact.PlayRandom();
+				this.DisplayMessage("Vous avez trouvé " + artefact + "!", "Récupérez", () =>
+				{
+					this.gamePhase = GamePhase.PlayerIdle;
+					this.NextPhase();
+				});
+			}
 		}
 
 		public void GenerateTurnOrders(List<int> playersTurns)
@@ -725,14 +986,33 @@ namespace Clapotis
 			}
 		}
 
+		private Player		promptPlayer;
+		private OnBoardItem	promptBoardItem;
+		private Artefact	promptArtefact;
+
+		public void	ReplaceArtefact(bool answer)
+		{
+			if (answer == true)
+				this.AddArtefactToPlayer(promptPlayer, promptArtefact, promptBoardItem);
+			else
+			{
+				this.DisplayMessage("Vous avez abandonné l'artéfact sur place!", "Récupérez", () =>
+				{
+					this.gamePhase = GamePhase.PlayerIdle;
+					this.NextPhase();
+				});
+			}
+		}
+
 		public GameObject	messagePopup;
 		public Action		messageCallback;
 
-		public void	DisplayMessage(string message, Action callback)
+		public void	DisplayMessage(string message, string button, Action callback)
 		{
 			Debug.Log("DisplayMessage(" + message + ")");
 			this.messagePopup.SetActive(true);
 			this.messagePopup.GetComponentInChildren<TextMeshProUGUI>().text = message;
+			this.messagePopup.GetComponentInChildren<Text>().text = button;
 			this.messageCallback = callback;
 		}
 
@@ -744,10 +1024,12 @@ namespace Clapotis
 		public GameObject	confirmPopup;
 		public Action<bool>	confirmCallback;
 
-		public void DisplayConfirm(string message, Action<bool> callback)
+		public void	DisplayConfirm(string message, string buttonYes, string buttonNo, Action<bool> callback)
 		{
 			this.confirmPopup.SetActive(true);
 			this.confirmPopup.GetComponentInChildren<TextMeshProUGUI>().text = message;
+			this.confirmPopup.GetComponentsInChildren<Text>()[0].text = buttonYes;
+			this.confirmPopup.GetComponentsInChildren<Text>()[1].text = buttonNo;
 			this.confirmCallback = callback;
 		}
 

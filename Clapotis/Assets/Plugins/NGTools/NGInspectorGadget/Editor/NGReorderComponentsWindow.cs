@@ -23,10 +23,25 @@ namespace NGToolsEditor.NGInspectorGadget
 		[MenuItem("CONTEXT/Component/Reorder Components", priority = 502)]
 		private static void	StartReorderComponents(MenuCommand menuCommand)
 		{
-			Rect					r = EditorWindow.focusedWindow.position;
+			Rect						r = EditorWindow.focusedWindow.position;
 			NGReorderComponentsWindow	wizard = EditorWindow.GetWindow<NGReorderComponentsWindow>(true, NGReorderComponentsWindow.Title, true);
 
-			wizard.Init(Selection.gameObjects);
+			if (menuCommand.context != null)
+			{
+				Component	component = menuCommand.context as Component;
+
+				if (component != null)
+					wizard.Init(new GameObject[] { component.gameObject });
+				else
+				{
+					GameObject	gameObject = menuCommand.context as GameObject;
+
+					if (gameObject != null)
+						wizard.Init(new GameObject[] { gameObject });
+				}
+			}
+			else
+				wizard.Init(Selection.gameObjects);
 
 			r.height = wizard.components.Count * wizard.list.elementHeight + 38F;
 
