@@ -79,6 +79,11 @@ namespace Clapotis
 			this.slot = slot;
 		}
 
+		public static implicit operator int(Artefact value)
+		{
+			return value.group * (int)value.slot;
+		}
+
 		public override string	ToString()
 		{
 			return "Artefact " + slot + " " + this.group;
@@ -426,6 +431,8 @@ namespace Clapotis
 		public Image		idleTurnImage;
 		public GameObject	godSpot;
 		public GameObject[]	spots;
+		public Texture2D[]	icons;
+		public Sprite[]		icons2;
 
 		public AudioRandomizer	playGodCreatesArtifact;
 		public AudioRandomizer	playGodCreatesMonster;
@@ -852,26 +859,7 @@ namespace Clapotis
 						this.firstContinuezButton.SetActive(false);
 					}
 
-					//this.firstSelector.;
-					//this.lastSelector.;
 					this.EndGameEvent.Invoke();
-					//this.DisplayMessage("You won against Michael the Allmight... GG & Kudos to you !", () =>
-					//{
-					//	if (this.board.gameIteration + 1 == this.maxWinStreak)
-					//	{
-					//		this.DisplayMessage("You reached " + this.maxWinStreak + " wins against Michael, congratulation !\nPress to start a new game", () =>
-					//		{
-					//			this.StartNewParty();
-					//		});
-					//	}
-					//	else
-					//	{
-					//		this.DisplayMessage("Press to evolve to the New World", () =>
-					//		{
-					//			this.EvolveParty();
-					//		});
-					//	}
-					//});
 					break;
 			}
 		}
@@ -929,6 +917,15 @@ namespace Clapotis
 				this.AddArtefactToPlayer(player, artefact, boardItem);
 		}
 
+		public Image	foundArtefact;
+		public Image	replaceArtefact;
+
+		public void	RunPlayerIdlePhase()
+		{
+			this.gamePhase = GamePhase.PlayerIdle;
+			this.NextPhase();
+		}
+
 		private void	AddArtefactToPlayer(Player player, Artefact artefact, OnBoardItem boardItem)
 		{
 			Artefact	replacedArtefact = player.AddOrReplaceArtefact(artefact);
@@ -941,20 +938,26 @@ namespace Clapotis
 			if (replacedArtefact != null)
 			{
 				this.playPlayerFoundArtifact.PlayRandom();
-				this.DisplayMessage("Vous avez trouvé " + artefact + " et déposé " + replacedArtefact + "!", "Continuez", () =>
-				{
-					this.gamePhase = GamePhase.PlayerIdle;
-					this.NextPhase();
-				});
+				this.foundArtefact.sprite = this.icons2[artefact];
+				this.foundArtefact.transform.parent.gameObject.SetActive(true);
+
+				//this.DisplayMessage("Vous avez trouvé " + artefact + " et déposé " + replacedArtefact + "!", "Continuez", () =>
+				//{
+				//	this.gamePhase = GamePhase.PlayerIdle;
+				//	this.NextPhase();
+				//});
 			}
 			else
 			{
 				this.playPlayerFoundArtifact.PlayRandom();
-				this.DisplayMessage("Vous avez trouvé " + artefact + "!", "Récupérez", () =>
-				{
-					this.gamePhase = GamePhase.PlayerIdle;
-					this.NextPhase();
-				});
+				this.replaceArtefact.sprite = this.icons2[artefact];
+				this.replaceArtefact.transform.parent.gameObject.SetActive(true);
+
+				//this.DisplayMessage("Vous avez trouvé " + artefact + "!", "Récupérez", () =>
+				//{
+				//	this.gamePhase = GamePhase.PlayerIdle;
+				//	this.NextPhase();
+				//});
 			}
 		}
 
@@ -996,7 +999,7 @@ namespace Clapotis
 				this.AddArtefactToPlayer(promptPlayer, promptArtefact, promptBoardItem);
 			else
 			{
-				this.DisplayMessage("Vous avez abandonné l'artéfact sur place!", "Récupérez", () =>
+				this.DisplayMessage("Vous avez abandonné l'artéfact sur place!", "Continuez", () =>
 				{
 					this.gamePhase = GamePhase.PlayerIdle;
 					this.NextPhase();
